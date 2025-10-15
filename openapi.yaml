@@ -240,7 +240,7 @@ paths:
   /perks/{perkId}/redeem:
     post:
       tags: [Redemptions]
-      summary: Redeem a perk for a user (idempotent)
+      summary: Redeem a perk for a user
       description: |
         Use `Idempotency-Key` header to safely retry the same redemption without duplicate charges.
       parameters:
@@ -288,7 +288,7 @@ paths:
   /categories:
     get:
       tags: [Categories]
-      summary: List perk categories
+      summary: Fetch perk categories
       responses:
         "200":
           description: Categories
