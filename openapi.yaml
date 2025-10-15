@@ -19,9 +19,9 @@ info:
     - Sorting via `?sort=field,-otherField`.
 
 servers:
-  - url: https://api.housr.com
+  - url: https://api.us.housr.com
     description: Production
-  - url: https://sandbox.api.housr.com
+  - url: https://sandbox.api.us.housr.com
     description: Sandbox
 
 tags:
@@ -41,14 +41,10 @@ paths:
       responses:
         "200":
           description: OK
-
   /auth/token:
     post:
-      tags: [Auth]
-      summary: Exchange Basic credentials for a bearer token
-      description: |
-        Provide HTTP Basic Auth with your `client_id` and `client_secret`.
-        Returns a bearer token that expires in ~24 hours by default.
+      summary: Exchange Basic credentials for a scoped bearer token
+      description: Scopes are determined by your client credentials
       security:
         - basicAuth: []
       requestBody:
@@ -60,33 +56,29 @@ paths:
               properties:
                 daily:
                   type: boolean
-                  description: If true, server may issue a per-day replicable token (same token for same day).
-                scope:
-                  type: string
-                  description: Optional scopes (space-delimited). Future use.
+                  description: If true, server may issue a per-day token (expires after 24 hours of generation).
       responses:
         "200":
           description: Token issued
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenResponse"
-              examples:
-                default:
-                  value:
-                    access_token: "eyJhbGciOi..."  # or opaque token
-                    token_type: "Bearer"
-                    expires_in: 86400
-                    expires_at: "2025-10-16T09:00:00Z"
-                    issued_at: "2025-10-15T09:00:00Z"
-                    daily: false
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
+                type: object
+                properties:
+                  access_token: { type: string }
+                  expires_at: { type: string, format: date-time }
+  /perks:
+    get:
+      
+    post:
+      x-required-scopes: ["perks:write"]
+  /perks/{perkId}/redeem:
+    post:
+      x-required-scopes: ["redemptions:create"]
 
   /perks:
     get:
+      x-required-scopes: ["perks:read"]
       tags: [Perks]
       summary: List perks
       description: Browse perks with filters, pagination, and sorting.
@@ -145,30 +137,9 @@ paths:
                     $ref: "#/components/schemas/PaginationMeta"
         "401":
           $ref: "#/components/responses/Unauthorized"
-    post:
-      tags: [Perks]
-      summary: Create a perk
-      description: Create a new perk. Typically restricted to partner or internal clients.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/PerkCreate" }
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Perk" }
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "422":
-          $ref: "#/components/responses/Unprocessable"
-
   /perks/{perkId}:
     get:
+      x-required-scopes: ["perks:read"]
       tags: [Perks]
       summary: Get a single perk
       parameters:
@@ -183,43 +154,9 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-    patch:
-      tags: [Perks]
-      summary: Update a perk
-      parameters:
-        - $ref: "#/components/parameters/PerkId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/PerkUpdate" }
-      responses:
-        "200":
-          description: Updated
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Perk" }
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "422":
-          $ref: "#/components/responses/Unprocessable"
-    delete:
-      tags: [Perks]
-      summary: Delete a perk
-      parameters:
-        - $ref: "#/components/parameters/PerkId"
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
   /perks/{perkId}/locations:
     get:
+      x-required-scopes: ["perks:read"]
       tags: [Perks]
       summary: Locations where the perk is available
       parameters:
@@ -239,6 +176,7 @@ paths:
 
   /perks/{perkId}/redeem:
     post:
+      x-required-scopes: ["redemptions:create"]
       tags: [Redemptions]
       summary: Redeem a perk for a user
       description: |
@@ -287,6 +225,7 @@ paths:
 
   /categories:
     get:
+      x-required-scopes: ["perks:read"]
       tags: [Categories]
       summary: Fetch perk categories
       responses:
