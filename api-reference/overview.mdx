@@ -1,0 +1,28 @@
+---
+title: Overview
+description: Daily-expiring Bearer token and Perks API overview.
+---
+
+# Housr Perks API
+
+The Housr Perks API lets you browse, manage, and redeem perks for your users.  
+All endpoints require `Authorization: Bearer <token>` over HTTPS, except `/health` and `/auth/token`.
+
+## Base URLs
+
+- **Production:** `https://api.housr.com`
+- **Sandbox:** `https://sandbox.api.housr.com`
+
+## What’s inside
+
+- **Daily-expiring token** via HTTP Basic to `/auth/token`
+- **Perks**: list, get, create, update, delete
+- **Redemptions**: idempotent redemption endpoint
+- **Categories** and **User perks**
+- **Consistent pagination, filtering & sorting**
+
+## Quick start
+
+1. [Get a token](/authentication)
+2. Hit the [Perks endpoints](/reference#tag/Perks) with your Bearer token
+3. Use `Idempotency-Key` when redeeming perks
