@@ -4,18 +4,13 @@
         "light": "https://housr-public-images.s3.us-east-2.amazonaws.com/logos/housr_logo.png",
         "dark": "https://housr-public-images.s3.us-east-2.amazonaws.com/logos/housr_logo_white.png"
     },
-    "favicon": "https://assets.housr.com/brand/favicon.png",
+    "favicon": "https://housr-public-images.s3.us-east-2.amazonaws.com/logos/favicon.svg",
     "theme": "willow",
     "colors": {
-        "primary": "#4F46E5"
+        "primary": "#09492D"
     },
     "analytics": {
         "ga4": "G-XXXXXXXXXX"
-    },
-    "topbarCta": {
-        "type": "link",
-        "text": "Get API Access",
-        "url": "https://partners.myhousr.com"
     },
     "navigation": {
         "tabs": [
@@ -50,10 +45,6 @@
                     "valuePrefix": "Bearer "
                 }
             }
-        },
-        "social": {
-            "github": "https://github.com/housr",
-            "x": "https://x.com/housr"
         }
     }
 }
