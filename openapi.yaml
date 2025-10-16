@@ -1,17 +1,17 @@
 openapi: 3.1.0
 info:
-  title: Housr Perks API
+  title: Housr API
   version: "1.0.0"
-  summary: Daily-expiring bearer token auth with perks browse & redemption.
+  summary: Hourly-expiring bearer token auth with perks browse & redemption.
   description: |
-    This API issues a daily-expiring bearer token via HTTP Basic Auth and exposes endpoints
+    This API issues an hourly-expiring bearer token via HTTP Basic Auth and exposes endpoints
     for browsing, managing, and redeeming perks. Unless otherwise noted, all endpoints
     require `Authorization: Bearer <token>` over HTTPS.
 
     ## Authentication
     - Obtain a token with Basic Auth to /auth/token.
-    - Token expires in 24 hours by default.
-    - Optional "replicable per-day" mode can be enabled server-side (see `daily` flag).
+    - Token expires in 1 hour by default.
+    - Optional "replicable per-hour" mode can be enabled server-side (see `hourly` flag).
 
     ## Pagination & Sorting
     - Use `page` (default 1) and `per_page` (default 25, max 100).
@@ -19,23 +19,20 @@ info:
     - Sorting via `?sort=field,-otherField`.
 
 servers:
-  - url: https://api.us.housr.com
+  - url: https://v2.api.us.housr.com
     description: Production
-  - url: https://sandbox.api.us.housr.com
+  - url: https://staging.v2.api.us.housr.com
     description: Sandbox
 
 tags:
   - name: Auth
   - name: Perks
-  - name: Categories
-  - name: Redemptions
-  - name: Users
-  - name: System
+  - name: Health Check
 
 paths:
   /health:
     get:
-      tags: [System]
+      tags: [Health Check]
       summary: Health check
       security: []
       responses:
@@ -43,8 +40,9 @@ paths:
           description: OK
   /auth/token:
     post:
-      summary: Exchange Basic credentials for a scoped bearer token
-      description: Scopes are determined by your client credentials
+      tags: [Auth]
+      summary: Get bearer token
+      description: Issue a short-lived bearer token (~1 hour). Scopes are determined by your client credentials
       security:
         - basicAuth: []
       requestBody:
@@ -53,10 +51,7 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
-                daily:
-                  type: boolean
-                  description: If true, server may issue a per-day token (expires after 24 hours of generation).
+              additionalProperties: false
       responses:
         "200":
           description: Token issued
@@ -67,44 +62,26 @@ paths:
                 properties:
                   access_token: { type: string }
                   expires_at: { type: string, format: date-time }
-  /perks:
-    get:
-      
-    post:
-      x-required-scopes: ["perks:write"]
-  /perks/{perkId}/redeem:
-    post:
-      x-required-scopes: ["redemptions:create"]
-
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /perks:
     get:
       x-required-scopes: ["perks:read"]
       tags: [Perks]
-      summary: List perks
+      summary: Get perks
       description: Browse perks with filters, pagination, and sorting.
       parameters:
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PerPage"
         - $ref: "#/components/parameters/Sort"
         - in: query
-          name: q
-          schema: { type: string }
-          description: Free-text search across title and description
-        - in: query
-          name: category_id
+          name: category
           schema: { type: string }
         - in: query
           name: city
           schema: { type: string }
-        - in: query
-          name: valid_on
-          schema:
-            type: string
-            format: date
-          description: Return perks valid on this calendar date (YYYY-MM-DD, UTC)
-        - in: query
-          name: active
-          schema: { type: boolean }
         - in: query
           name: lat
           schema: { type: number, format: double }
@@ -146,7 +123,7 @@ paths:
         - $ref: "#/components/parameters/PerkId"
       responses:
         "200":
-          description: Perk
+          description: A single perk
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Perk" }
@@ -154,40 +131,14 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-  /perks/{perkId}/locations:
-    get:
-      x-required-scopes: ["perks:read"]
-      tags: [Perks]
-      summary: Locations where the perk is available
-      parameters:
-        - $ref: "#/components/parameters/PerkId"
-      responses:
-        "200":
-          description: List of locations
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: "#/components/schemas/Location" }
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
   /perks/{perkId}/redeem:
     post:
       x-required-scopes: ["redemptions:create"]
-      tags: [Redemptions]
+      tags: [Perks]
       summary: Redeem a perk for a user
-      description: |
-        Use `Idempotency-Key` header to safely retry the same redemption without duplicate charges.
+      description: Redeem a perk for a user.
       parameters:
         - $ref: "#/components/parameters/PerkId"
-        - in: header
-          name: Idempotency-Key
-          required: false
-          schema: { type: string }
-          description: A unique key to ensure idempotent redemption.
       requestBody:
         required: true
         content:
@@ -222,11 +173,10 @@ paths:
               schema: { $ref: "#/components/schemas/Problem" }
         "422":
           $ref: "#/components/responses/Unprocessable"
-
-  /categories:
+  /perks/categories:
     get:
       x-required-scopes: ["perks:read"]
-      tags: [Categories]
+      tags: [Perks]
       summary: Fetch perk categories
       responses:
         "200":
@@ -239,10 +189,10 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
-  /users/{userId}/perks:
+  /perks/users/{userId}:
     get:
-      tags: [Users]
-      summary: List perks for a user (available, saved, redeemed)
+      tags: [Perks]
+      summary: Get list of perks for a user
       parameters:
         - in: path
           name: userId
@@ -252,7 +202,7 @@ paths:
           name: type
           schema:
             type: string
-            enum: [available, saved, redeemed]
+            enum: [available, redeemed]
             default: available
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PerPage"
@@ -372,63 +322,23 @@ components:
       type: object
       properties:
         id: { type: string }
-        name: { type: string }
-        slug: { type: string }
-        icon_url: { type: string, format: uri, nullable: true }
+        category_name: { type: string }
     Perk:
       type: object
-      required: [id, title, active]
       properties:
         id: { type: string }
         title: { type: string }
         description: { type: string }
-        category_id: { type: string, nullable: true }
+        category: { type: string, nullable: true }
         merchant_name: { type: string, nullable: true }
         image_url: { type: string, format: uri, nullable: true }
-        value:
-          allOf:
-            - $ref: "#/components/schemas/Money"
-          nullable: true
         discount_text: { type: string, nullable: true }
         terms: { type: string, nullable: true }
         valid_from: { type: string, format: date-time, nullable: true }
         valid_to: { type: string, format: date-time, nullable: true }
-        active: { type: boolean }
-        locations_count: { type: integer, minimum: 0 }
+        city: { type: string }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
-    PerkCreate:
-      type: object
-      required: [title, active]
-      properties:
-        title: { type: string }
-        description: { type: string }
-        category_id: { type: string }
-        merchant_name: { type: string }
-        image_url: { type: string, format: uri }
-        value: { $ref: "#/components/schemas/Money" }
-        discount_text: { type: string }
-        terms: { type: string }
-        valid_from: { type: string, format: date-time }
-        valid_to: { type: string, format: date-time }
-        active: { type: boolean }
-    PerkUpdate:
-      type: object
-      properties:
-        title: { type: string }
-        description: { type: string }
-        category_id: { type: string, nullable: true }
-        merchant_name: { type: string, nullable: true }
-        image_url: { type: string, format: uri, nullable: true }
-        value:
-          allOf:
-            - $ref: "#/components/schemas/Money"
-          nullable: true
-        discount_text: { type: string, nullable: true }
-        terms: { type: string, nullable: true }
-        valid_from: { type: string, format: date-time, nullable: true }
-        valid_to: { type: string, format: date-time, nullable: true }
-        active: { type: boolean }
     Redemption:
       type: object
       properties:

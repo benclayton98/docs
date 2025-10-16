@@ -1,0 +1,27 @@
+---
+title: Overview
+description: Discover, manage, and redeem exclusive perks for your users.
+---
+
+# Housr Perks API
+
+The Housr Perks API lets you browse, manage, and redeem perks for your users.  
+All endpoints require `Authorization: Bearer <token>` over HTTPS, except `/health` and `/auth/token`.
+
+## Base URLs
+
+- **Production:** `https://v2.api.us.housr.com`
+- **Sandbox:** `https://staging.v2.api.us.housr.com`
+
+## What’s inside
+
+- **Hourly-expiring token** via HTTP Basic to `/auth/token`
+- **Perks**: list, get
+- **Redemptions**: redemption endpoint
+- **Categories** and **User perks**
+- **Consistent pagination, filtering & sorting**
+
+## Quick start
+
+1. [Get a token](/api-reference/auth/get-bearer-token)
+2. Hit the [Perks endpoints](/api-reference/perks/get-perks) with your Bearer token

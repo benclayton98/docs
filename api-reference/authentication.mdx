@@ -1,6 +1,6 @@
 ---
 title: Authentication
-description: Obtain a daily-expiring bearer token via Basic Auth.
+description: Obtain an hourly-expiring bearer token via Basic Auth.
 ---
 
 # Authentication
@@ -15,4 +15,4 @@ Tokens expire every 24 hours by default. You may also enable a **replicable per-
 curl -X POST https://api.housr.com/auth/token \
   -u "your_client_id:your_client_secret" \
   -H "Content-Type: application/json" \
-  -d '{"daily": false}'
+  -d '{"hourly": false}'

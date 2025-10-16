@@ -1,8 +1,8 @@
 {
-    "name": "Housr Perks API",
+    "name": "Housr API",
     "logo": {
-        "light": "https://assets.housr.com/brand/housr-logo-dark.svg",
-        "dark": "https://assets.housr.com/brand/housr-logo-light.svg"
+        "light": "https://housr-public-images.s3.us-east-2.amazonaws.com/logos/housr_logo.png",
+        "dark": "https://housr-public-images.s3.us-east-2.amazonaws.com/logos/housr_logo_white.png"
     },
     "favicon": "https://assets.housr.com/brand/favicon.png",
     "theme": "willow",
@@ -15,7 +15,7 @@
     "topbarCta": {
         "type": "link",
         "text": "Get API Access",
-        "url": "https://partners.housr.com"
+        "url": "https://partners.myhousr.com"
     },
     "navigation": {
         "tabs": [
@@ -25,7 +25,7 @@
                     {
                         "group": "API documentation",
                         "pages": [
-                            "api-reference/introduction"
+                            "api-reference/overview"
                         ]
                     },
                     {
@@ -38,7 +38,7 @@
         "api": {
             "openapi": "openapi.yaml",
             "playground": {
-                "baseUrl": "https://api.us.housr.com",
+                "baseUrl": "https://v2.api.us.housr.com",
                 "request": {
                     "headers": {
                         "User-Agent": "Housr-Docs/1.0"
