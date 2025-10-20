@@ -30,7 +30,7 @@ tags:
   - name: Health Check
 
 paths:
-  /health:
+  /health-check:
     get:
       tags: [Health Check]
       summary: Health check
