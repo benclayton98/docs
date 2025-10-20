@@ -21,7 +21,7 @@ info:
 servers:
   - url: https://v2.api.us.housr.com
     description: Production
-  - url: https://staging.v2.api.us.housr.com
+  - url: https://v2.staging.api.us.housr.com
     description: Sandbox
 
 tags:
@@ -38,11 +38,15 @@ paths:
       responses:
         "200":
           description: OK
+        "503":
+          description: Service unavailable
   /auth/token:
     post:
       tags: [Auth]
       summary: Get bearer token
-      description: Issue a short-lived bearer token (~1 hour). Scopes are determined by your client credentials
+      description: |
+        Issue a short-lived bearer token for API authentication. The token expires in approximately 1 hour 
+        and provides access to the Housr API based on your client credentials and associated scopes.
       security:
         - basicAuth: []
       requestBody:
@@ -62,8 +66,6 @@ paths:
                 properties:
                   access_token: { type: string }
                   expires_at: { type: string, format: date-time }
-        "401":
-          $ref: "#/components/responses/Unauthorized"
         "429":
           $ref: "#/components/responses/TooManyRequests"
   /perks:
@@ -162,17 +164,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
-        "409":
-          description: Conflict (already redeemed or not eligible)
-          content:
-            application/problem+json:
-              schema: { $ref: "#/components/schemas/Problem" }
-        "422":
-          $ref: "#/components/responses/Unprocessable"
   /perks/categories:
     get:
       x-required-scopes: ["perks:read"]
@@ -362,11 +355,7 @@ components:
     Problem:
       type: object
       properties:
-        type: { type: string, format: uri, nullable: true }
-        title: { type: string }
-        status: { type: integer }
-        detail: { type: string, nullable: true }
-        instance: { type: string, format: uri, nullable: true }
+        response: { type: "string" }
     ValidationProblem:
       allOf:
         - $ref: "#/components/schemas/Problem"
